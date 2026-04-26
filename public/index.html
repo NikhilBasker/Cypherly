@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Secure Chat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Join Screen -->
+  <div id="join-screen" class="screen">
+    <div class="card">
+      <div class="logo">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="10" fill="#1a1a2e"/>
+          <path d="M20 8C13.37 8 8 12.48 8 18c0 3.18 1.7 6.02 4.37 7.93L11 32l6.3-3.15C18.17 29.27 19.07 29.4 20 29.4c6.63 0 12-4.48 12-10.4S26.63 8 20 8z" fill="#00d4aa"/>
+        </svg>
+        <span>SecureChat</span>
+      </div>
+      <p class="subtitle">End-to-end encrypted · No logs · Tor-ready</p>
+
+      <div class="tabs">
+        <button class="tab active" id="tab-create">Create Room</button>
+        <button class="tab" id="tab-join">Join with Token</button>
+      </div>
+
+      <div id="panel-create">
+        <div class="field">
+          <label>Room ID</label>
+          <input id="create-room" type="text" placeholder="e.g. friends-2024" maxlength="64" autocomplete="off" spellcheck="false"/>
+          <span class="hint">Alphanumeric and hyphens only</span>
+        </div>
+        <div class="field">
+          <label>Room Password</label>
+          <input id="create-password" type="password" placeholder="Strong password" autocomplete="off"/>
+          <span class="hint">Used to generate invite tokens for friends</span>
+        </div>
+        <div class="field">
+          <label>Your display name</label>
+          <input id="create-name" type="text" placeholder="Anonymous" maxlength="32" autocomplete="off"/>
+        </div>
+        <button class="btn-primary" id="create-btn">Create Room &amp; Join</button>
+      </div>
+
+      <div id="panel-join" class="hidden">
+        <div class="info-box">
+          Your friend creates the room and sends you a one-time token. Paste it below.
+        </div>
+        <div class="field">
+          <label>Room ID</label>
+          <input id="join-room" type="text" placeholder="e.g. friends-2024" maxlength="64" autocomplete="off" spellcheck="false"/>
+        </div>
+        <div class="field">
+          <label>Invite Token</label>
+          <input id="join-token" type="text" placeholder="Paste token here" autocomplete="off" spellcheck="false"/>
+          <span class="hint">One-time use · expires in 24h</span>
+        </div>
+        <div class="field">
+          <label>Your display name</label>
+          <input id="join-name" type="text" placeholder="Anonymous" maxlength="32" autocomplete="off"/>
+        </div>
+        <button class="btn-primary" id="join-btn">Join Room</button>
+      </div>
+
+      <div id="join-error" class="error-msg hidden"></div>
+
+      <div class="security-badges">
+        <span class="badge">🔐 AES-256-GCM</span>
+        <span class="badge">🔑 ECDH P-384</span>
+        <span class="badge">🎫 Token auth</span>
+        <span class="badge">🚫 Zero logs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Screen -->
+  <div id="chat-screen" class="screen hidden">
+    <div class="chat-layout">
+
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="room-info">
+            <span class="room-label">Room</span>
+            <span id="room-display" class="room-name"></span>
+          </div>
+          <div class="peer-count-wrap">
+            <span class="dot online"></span>
+            <span id="peer-count">1</span> online
+          </div>
+        </div>
+
+        <div class="key-info">
+          <div class="key-label">Your fingerprint</div>
+          <code id="key-fingerprint" class="fingerprint">generating…</code>
+          <div class="key-hint">Compare with friends out-of-band</div>
+        </div>
+
+        <div id="invite-section" class="invite-section hidden">
+          <div class="key-label">Invite a friend</div>
+          <button class="btn-invite" id="generate-invite-btn">Generate invite token</button>
+          <div id="invite-result" class="invite-result hidden">
+            <code id="invite-token-display" class="token-display"></code>
+            <button class="btn-copy" id="copy-invite-btn">Copy token</button>
+            <div class="key-hint">Send over Signal only. One-time use, 24h expiry.</div>
+          </div>
+        </div>
+
+        <div id="peers-list" class="peers-list"></div>
+        <button class="btn-leave" id="leave-btn">Leave room</button>
+      </div>
+
+      <div class="chat-main">
+        <div class="mobile-bar">
+          <button class="mobile-menu-btn" id="mobile-menu-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <span class="mobile-room-name" id="mobile-room-display"></span>
+          <span class="mobile-peer-count">
+            <span class="dot online"></span>
+            <span id="mobile-peer-count">1</span>
+          </span>
+        </div>
+
+        <div id="messages" class="messages"></div>
+
+        <div id="typing-bar" class="typing-bar hidden">
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+          <span class="typing-text"></span>
+        </div>
+
+        <div class="input-bar">
+          <input id="msg-input" type="text" placeholder="Message (encrypted before sending)"
+            maxlength="2000" autocomplete="off" spellcheck="false"/>
+          <button class="btn-send" id="send-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="crypto.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
