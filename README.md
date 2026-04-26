@@ -1,4 +1,4 @@
-# Secure Chat — Setup & Deployment Guide
+# Cypherly — Setup & Deployment Guide
 
 ## Architecture
 
@@ -97,23 +97,23 @@ Your chat is now accessible at `http://youraddress.onion` via the Tor Browser.
 ### Run as a non-root user
 ```bash
 # Create a dedicated user
-sudo useradd -r -s /bin/false securechat
-sudo chown -R securechat:securechat /path/to/your/app
+sudo useradd -r -s /bin/false Cypherly
+sudo chown -R Cypherly:Cypherly /path/to/your/app
 
 # Run as that user
-sudo -u securechat node index.js
+sudo -u Cypherly node index.js
 ```
 
 ### Use systemd to auto-restart
-Create `/etc/systemd/system/securechat.service`:
+Create `/etc/systemd/system/Cypherly.service`:
 ```ini
 [Unit]
-Description=Secure Chat Server
+Description=Cypherly Server
 After=network.target
 
 [Service]
 Type=simple
-User=securechat
+User=Cypherly
 WorkingDirectory=/path/to/your/app
 ExecStart=/usr/bin/node index.js
 Restart=on-failure
@@ -128,8 +128,8 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable securechat
-sudo systemctl start securechat
+sudo systemctl enable Cypherly
+sudo systemctl start Cypherly
 ```
 
 ### Firewall — block all external ports except Tor
